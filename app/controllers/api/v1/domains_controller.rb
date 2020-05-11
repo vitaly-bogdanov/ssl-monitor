@@ -5,6 +5,12 @@ class Api::V1::DomainsController < ApplicationController
   end
 
   def domain
-    
+    domain = Domain.new(name: params)
+    if domain.save
+      render json: { domain: domain }, status: 201
+    else
+      render json: {}, status: 422
+    end
   end
+
 end
