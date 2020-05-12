@@ -26,7 +26,7 @@ development:
   adapter: postgresql
   encoding: unicode
   database: ssl-monitor_db_d
-  host: localhost
+  host: pg
   port: 5432
   pool: 5
   username: postgres
@@ -37,7 +37,7 @@ production:
   adapter: postgresql
   encoding: unicode
   database: ssl-monitor_db_p
-  host: localhost
+  host: pg
   port: 5432
   pool: 5
   username: postgres
