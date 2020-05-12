@@ -26,8 +26,8 @@ development:
   adapter: postgresql
   encoding: unicode
   database: ssl-monitor_db_d
-  host: pg
-  port: 5432
+  host: localhost
+  port: 8080
   pool: 5
   username: postgres
   password: example
@@ -37,8 +37,8 @@ production:
   adapter: postgresql
   encoding: unicode
   database: ssl-monitor_db_p
-  host: pg
-  port: 5432
+  host: localhost
+  port: 8080
   pool: 5
   username: postgres
   password: example
@@ -49,7 +49,7 @@ test:
   encoding: unicode
   database: ssl-monitor_db_t
   host: localhost
-  port: 5432
+  port: 8080
   pool: 5
   username: postgres
   password: example
