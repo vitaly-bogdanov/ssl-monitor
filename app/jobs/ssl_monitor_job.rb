@@ -6,8 +6,8 @@ class SslMonitorJob < ApplicationJob
   def perform()
     Domain.all.each do |domain|
       begin
-        socket = get_socket(domain.name, domain.port)
-        socket.connect
+        sockets = get_socket(domain.name, domain.port)
+        sockets[:ssl_socket].connect
         sertificate = get_sertificate(socket)
         time_status = get_time_status(sertificate)
         if time_status[:days_to_start] >= 0
@@ -32,6 +32,7 @@ class SslMonitorJob < ApplicationJob
           message_decorator(GOOD, 'ОК', domain.name)
           condition_warning_message(time_status[:days_to_end])
         end
+        sockets[:tcp_socket].close
       rescue OpenSSL::SSL::SSLError => e # 4. Ошибка SSL
         domain.update(status: BAD) if domain.status == GOOD
         message_decorator(BAD, e, domain.name)
@@ -49,7 +50,7 @@ class SslMonitorJob < ApplicationJob
 
   def get_socket(domain_name, domain_port)
     tcp_client = TCPSocket.new(domain_name, domain_port)
-    OpenSSL::SSL::SSLSocket.new(tcp_client)
+    {ssl_socket: OpenSSL::SSL::SSLSocket.new(tcp_client), tcp_socket: tcp_client}
   end
 
   def get_sertificate(socket)
