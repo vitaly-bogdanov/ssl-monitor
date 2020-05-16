@@ -2,6 +2,5 @@
 
 in terminal:
 docker-compose up --build;
-rails db:setup;
-rails server;
-sidekiq;
+docker-compose exec <container with rails app> bash;
+bundle exec rails db:setup
