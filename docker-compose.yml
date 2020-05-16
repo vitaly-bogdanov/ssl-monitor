@@ -1,11 +1,16 @@
 version: "3.1"
 
+volumes:
+  bundler_gems:
+  redis_store:
+  postgres_store:
+
 services:
   pg:
     image: postgres
     restart: always
     volumes:
-      - ./tmp/db:/var/postgresql/data
+      - postgres_store:/var/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: example
@@ -17,4 +22,25 @@ services:
     ports:
       - 8081:6379
     volumes:
-      - ./tmp/redis:/data
+      - redis_store:/data
+  sidekiq:
+    build: .
+    restart: always
+    command: bundle exec sidekiq
+    volumes:
+      - .:/myapp/
+    depends_on:
+      - rails
+      - redis
+  rails:
+    build: .
+    restart: always
+    command: bundle exec rails server -b 0.0.0.0 -p 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - bundler_gems:/usr/local/bundle/
+      - .:/myapp/
+    depends_on: 
+      - redis
+      - pg
