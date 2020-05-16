@@ -8,7 +8,7 @@ class SslMonitorJob < ApplicationJob
       begin
         sockets = get_socket(domain.name, domain.port)
         sockets[:ssl_socket].connect
-        sertificate = get_sertificate(socket)
+        sertificate = get_sertificate(sockets[:ssl_socket])
         time_status = get_time_status(sertificate)
         if time_status[:days_to_start] >= 0
           puts "дней до началп #{time_status[:days_to_start]}"
