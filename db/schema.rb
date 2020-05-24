@@ -18,7 +18,9 @@ ActiveRecord::Schema.define(version: 2020_05_09_144107) do
   create_table "domains", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "всё хорошо"
+    t.string "status_message", default: ""
     t.integer "port", default: 80
+    t.string "error_message", default: ""
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

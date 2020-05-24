@@ -11,5 +11,5 @@ Rails.application.routes.draw do
   end
   mount Sidekiq::Web, at: "/sidekiq"
   get '/status', to: 'api/v1/domains#status'
-  post '/domain', to: 'api/v1/domains#status'
+  post '/domain', to: 'api/v1/domains#domain'
 end

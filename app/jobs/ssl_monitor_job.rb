@@ -3,44 +3,51 @@ class SslMonitorJob < ApplicationJob
   BAD = 'всё плохо'
   SECOND_IN_DAY = 86_400
 
+  BEFORE_NOT = 'Срок действия SSL сертификата еще не начался'
+  AFTER_NOT = 'Срок действия SSL сертификата закончился'
+  OK = 'OK'
+  ERROR = 'ERROR'
+
   def perform()
     Domain.all.each do |domain|
       begin
         sockets = get_socket(domain.name, domain.port)
-        sockets[:ssl_socket].connect
+        sockets[:ssl_socket].connect # открываем сокет
         sertificate = get_sertificate(sockets[:ssl_socket])
         time_status = get_time_status(sertificate)
         if time_status[:days_to_start] >= 0
           puts "дней до началп #{time_status[:days_to_start]}"
           message_decorator(
             'Attention',
-            'Срок действия SSL сертификата еще не начался',
+            BEFORE_NOT,
             domain.name
           )
           message_time_status(sertificate)
-          domain.update(status: BAD) if domain.status == GOOD
+          domain.update(status: BAD, status_message: BEFORE_NOT)
         elsif time_status[:days_to_end] <= 0
           puts "дней до конца #{time_status[:days_to_end]}"
           message_decorator(
             'Attention',
-            'Срок действия SSL сертификата закончился',
+            AFTER_NOT,
             domain.name
           )
           message_time_status(sertificate)
-          domain.update(name: BAD) if domain.status == GOOD
+          domain.update(name: BAD, status_message: AFTER_NOT)
         else # 6. "Всё хорошо"
-          message_decorator(GOOD, 'ОК', domain.name)
+          message_decorator(GOOD, OK, domain.name)
+          domain.update(status_message: OK)
           condition_warning_message(time_status[:days_to_end])
         end
-        sockets[:tcp_socket].close
+        domain.update(error_message: '')
+        sockets[:tcp_socket].close # закрываем сокет
       rescue OpenSSL::SSL::SSLError => e # 4. Ошибка SSL
-        domain.update(status: BAD) if domain.status == GOOD
+        domain.update(status: BAD, error_message: e, status_message: ERROR)
         message_decorator(BAD, e, domain.name)
       rescue OpenSSL::X509::CertificateError => e
-        domain.update(status: BAD) if domain.status == GOOD
+        domain.update(status: BAD, error_message: e, status_message: ERROR)
         message_decorator(BAD, e, domain.name)
       rescue SocketError => e # 5. Ошибка установки соединения, не связанная с SSL
-        domain.status = BAD
+        domain.update(status: BAD, error_message: e, status_message: ERROR)
         message_decorator(BAD, e, domain.name)
       end
     end
@@ -96,26 +103,5 @@ class SslMonitorJob < ApplicationJob
     puts "Конец действия сертификата: #{sertificate.not_after}"
     puts '---------'
   end
+
 end
-
-# tcp_client = TCPSocket.new('tls-v1-2.badssl.com', 80)
-    # begin
-    #   tcp_client = TCPSocket.new('sha256.badssl.com', 80)
-    #   socket = OpenSSL::SSL::SSLSocket.new(tcp_client)
-    #   socket.connect
-    #   sertificate = OpenSSL::X509::Certificate.new(socket.peer_cert)
-    #   puts sertificate.not_after
-    #   puts Time.now
-    #   puts sertificate.not_before
-    # rescue OpenSSL::SSL::SSLError => error
-    #   puts "ssl error message: #{error}"
-    # rescue OpenSSL::X509::CertificateError => error
-    #   puts "certificate error #{error}"
-    # end
-
-    # puts '<- | ->'
-    # puts socket.peer_cert
-    # # puts '<- | ->'
-    # # puts socket.cert
-    # puts '<- | ->'
-    # puts socket.peer_cert_chain

@@ -1,10 +1,10 @@
 default: &default
-  timeout: 5000
+  timeout: 10000
   adapter: postgresql
   encoding: unicode
   host: pg
   # port: 8080
-  pool: 5
+  pool: 10
   username: postgres
   password: example
 
