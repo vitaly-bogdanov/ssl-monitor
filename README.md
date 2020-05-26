@@ -1,6 +1,6 @@
 # README
 
 in terminal:
-docker-compose up --build;
-docker-compose exec <container with rails app> bash;
-bundle exec rails db:setup
+docker-compose up --build; <br />
+docker-compose exec "your container with rails app" bash; <br />
+bundle exec rails db:setup <br />
